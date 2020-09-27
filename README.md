@@ -1,4 +1,4 @@
-# Apprentice Hashi - Create Demo Environment
+# Apprentice - Create Demo Environment
 
 ### About
 This repo creates a Demo Environment to teach Hashicorp Vault and Consul Essentials. It creates the following under one machine:
