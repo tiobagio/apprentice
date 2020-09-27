@@ -1,0 +1,12 @@
+# Terraform
+.terraform/
+*.tfvars
+*.tfstate*
+!example.tfvars
+
+# General
+/.DS_Store
+*.DS_Store
+
+# gcp service account
+gcp.json
