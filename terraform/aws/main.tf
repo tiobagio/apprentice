@@ -54,25 +54,24 @@ resource "aws_instance" "linux-node" {
   )
 
   provisioner "file" {
-    content     = templatefile("${path.module}/templates/user_data.sh.tpl", { mysql_password = var.mysql_password, aws_region = var.aws_region })
+    content     = templatefile("${path.module}/../templates/user_data.sh.tpl", { mysql_password = var.mysql_password })
     destination = "/tmp/user_data.sh"
   }
 
   provisioner "file" {
-    content     = templatefile("${path.module}/templates/hashi.sh.tpl", {
-mysql_password = var.mysql_password, aws_region = var.aws_region,  })
+    content     = templatefile("${path.module}/../templates/hashi.sh.tpl", { mysql_password = var.mysql_password })
     destination = "/tmp/hashi.sh"
   }
 
   provisioner "file" {
-    source     = "${path.module}/files/apprentice.tgz"
+    source     = "${path.module}/../files/apprentice.tgz"
     destination = "/home/ec2-user/apprentice.tgz"
 }
-  provisioner "remote-exec" {
-    inline = [
-      "bash -x /tmp/user_data.sh"
-    ]
-  }
+//  provisioner "remote-exec" {
+//    inline = [
+//      "bash -x /tmp/hashi.sh.sh"
+//    ]
+//  }
 
 }
 
@@ -107,6 +106,9 @@ resource "aws_route" "apprentice_default_route" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.apprentice_gw.id
 }
+
+////////////////////////////
+// Subnets
 
 resource "aws_subnet" "apprentice_subnet_a" {
   vpc_id                  = aws_vpc.apprentice_vpc.id

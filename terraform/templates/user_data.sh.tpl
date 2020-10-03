@@ -11,9 +11,9 @@ install_hashi() {
 install_utilities() {
     echo "***** Install Utilities *****"
 
-    sudo yum -y install ss
     sudo yum install -y bind-utils
-    sudo yum install -y git
+    #sudo yum -y install ss
+    #sudo yum install -y git
 }
 
 
@@ -40,16 +40,13 @@ install_mysqld() {
 
 config_env() {
     echo "***** Configure bash profile *****"
-    # AWS uses IAM
-    echo export AWS_REGION=us-west-1  >> ~/.bash_profile
-
     echo export LANG=en_US.UTF-8 >> ~/.bash_profile
     echo export LANGUAGE=en_US.UTF-8 >> ~/.bash_profile
     echo export LC_COLLATE=C >> ~/.bash_profile
     echo export LC_CTYPE=en_US.UTF-8 >> ~/.bash_profile
 
     echo export VAULT_ADDR="http://127.0.0.1:8200" >> ~/.bash_profile
-    #echo export VAULT_CACERT="/home/ec2-user/hashi/vault-coonfig/server.crt" >> ~/.bash_profile
+    #echo export VAULT_CACERT="~/hashi/vault-coonfig/server.crt" >> ~/.bash_profile
 }
 
 change_hashiuser() {
@@ -62,9 +59,9 @@ change_hashiuser() {
 	sudo chown vault:vault /home/vault
 }
 
-#install_hashi
-#install_httpd
-#install_mysqld
-#install_utilities
-#config_env
+install_hashi
 change_hashiuser
+install_httpd
+install_mysqld
+install_utilities
+config_env

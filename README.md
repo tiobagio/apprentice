@@ -3,33 +3,29 @@
 ### About
 This repo creates a Demo Environment to teach Hashicorp Vault and Consul Essentials. It creates the following under one machine:
 - Vault
-    - InSpec Profiles
-    - Creates 10 local users for the students
+    - Creates Database dynamic secrets, each with different roles
+    - Enables KV Secret Engine
 - Consul
-    - Creates user pem and org validator
-    - Habitat OnPrem Builder
-
-#### Other Resources
-This environment is made to work with the following:
-1. [Complaince Workshop Training Repo](https://github.com/anthonygrees/compliance-workshop)
-2. [Policyfiles training](https://github.com/anthonygrees/policyfiles_training)
-3. [Remote InSpec Scanning](https://github.com/chef-cft/inspec-remote-scanning) (See here for - [Setup](REMOTE-SCAN-SETUP.md))
+    - Creates services for Web and Database
+    - Secure communications between Web and DB using mutual TLS (mTLS)
+    - Creates Intentions to control which services may establish connections.
+- HTTPD
+- MySQL
+    - Change the root password
+    - Creates test databases and users
 
 
 ### Step 1 - Get Started
 First you need the code !
 ```bash
-git clone https://github.com/chef-cft/apprentice-chef
+git clone https://github.com/tiobagio/apprentice
 
-cd apprentice-chef
+cd apprentice
 ```
 
-#### MySQL Credentials
-User - `chef`
-Password - ```set by variable```
-
-#### Configure your terraform.tfvars file from the example
-Create a terrform.tfvars file from the example and populate appropriately
+#### Configure your variables.tfvars file from the example
+Modify a variables.tfvars file from the example and populate appropriately,
+including the new root password for mysql.
 
 ### Create the Chef Training Environment
 ```bash
@@ -56,11 +52,9 @@ terraform apply -auto-approve
 ### What does it create ?
 
 It will create the following servers
-- Ubuntu VM with Chef Automate, Chef Infra Server and Habitat On Prem Builder
-- Windows Student workstation (1 for each student)
+- RHEL VM with HTTP and MySQL, as well as HashiCorp Vault and Consul single deployment servers.
 
 Once successfully created, you will get an output like this:
-![TerraformOutput](/images/automate_output.png)
 
 ### Debuging
 
@@ -77,8 +71,8 @@ export TF_LOG_PATH=./terraform.log
 
 "Taint" the resource for recreation.  You can pass any resource name to the `taint` command
 ```bash
-terraform taint aws_iam_role.apprentice_role
-terraform taint "aws_instance.workstation[0]"
+terraform taint aws_instance.linux-node
+terraform taint "aws_instance.linux-node[0]"
 ```
 
 Then `apply` to recreate any resource you marked as tainted.
