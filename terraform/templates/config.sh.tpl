@@ -2,7 +2,7 @@
 config_vault() {
     echo "***** Configure Vault *****"
 
-    vault_pid=`ps -ef |grep 'vault server' |grep -v grep |awk '{print $2}'`
+    vault_pid=$(ps -ef |grep 'vault server' |grep -v grep |awk '{print $2}')
     if [ "$vault_pid" != "" ]; then 
 	echo "Killing VAULT pid $vault_pid"
 	sudo kill -9 $vault_pid
@@ -19,21 +19,23 @@ config_vault() {
     # server
     sudo rm -rf /etc/vault.d/vault.log
 sudo runuser -l vault -c "vault server -config=/etc/vault.d/simple.hcl > /etc/vault.d/vault.log 2>&1 &"
-    sleep 7
+    sleep 10
 
     # unseal
     export VAULT_ADDR="http://127.0.0.1:8200"
-    vault operator init > key.txt
-    vault operator unseal $(grep 'Key 1:' key.txt | awk '{print $NF}')
-    vault operator unseal $(grep 'Key 2:' key.txt | awk '{print $NF}')
-    vault operator unseal $(grep 'Key 3:' key.txt | awk '{print $NF}')
-    vault login $(grep 'Initial Root Token:' key.txt | awk '{print $NF}')
+    vault operator init > ~/key.txt
+    vault operator unseal $(grep 'Key 1:' ~/key.txt | awk '{print $NF}')
+    vault operator unseal $(grep 'Key 2:' ~/key.txt | awk '{print $NF}')
+    vault operator unseal $(grep 'Key 3:' ~/key.txt | awk '{print $NF}')
+    vault login $(grep 'Initial Root Token:' ~/key.txt | awk '{print $NF}')
 
-    token=`grep 'Initial Root Token:' key.txt | awk '{print $NF}'`
+    token=$(grep 'Initial Root Token:' key.txt | awk '{print $NF}')
     export VAULT_TOKEN=$token 
     echo export VAULT_TOKEN=$token >> ~/.bash_profile
 
+    pwd=$(vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}')
     #audit
+    echo export MYPWD=$pwd >> ~/.bash_profile
     #vault audit enable file file_path=/var/log/vault_audit.log
 
 }
@@ -53,27 +55,26 @@ config_vault_kv() {
 
     vault secrets enable -path=mysecret kv
     vault secrets list
-    pwd=`sudo grep 'root@localhost:' /var/log/mysqld.log |awk '{print $NF}'`
+    pwd=$(sudo grep 'root@localhost:' /var/log/mysqld.log |awk '{print $NF}')
 
     # need to toggle between the two
     #vault kv put mysecret/mysql root_password="$pwd" root_new_password='{mysql_password}'
-    vault kv put mysecret/mysql root_password="$pwd" root_new_password="{mysql_password}"
+    vault kv put mysecret/mysql root_password="$pwd" root_new_password="${mysql_password}"
     vault kv get mysecret/mysql
 }
 
 config_vault_database() {
     echo "***** Configure Vault database secret  *****"
-    newpassword=`vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}'`
+    newpassword=$(vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}')
+
 vault secrets enable database
 
-vault write database/config/tiosql plugin_name=mysql-database-plugin connection_url="{{username}}:{{password}}@tcp(127.0.0.1:3306)/"  allowed_roles="datareader,datawriter" username="tio" password="$newpassword"
-
-# vault write database/config/tiosql plugin_name=mysql-database-plugin connection_url="{{username}}:{{password}}@tcp(127.0.0.1:3306)/" \
-#root_rotation_statements="SET PASSWORD = PASSWORD('{{password}}')" \
-#    allowed_roles="datareader,datawriter" \
-#    username="tio" \
-#    password="$newpassword"
-
+vault write database/config/tiosql \
+   plugin_name=mysql-database-plugin \
+   connection_url="{{username}}:{{password}}@tcp(127.0.0.1:3306)/" \
+   allowed_roles="datareader,datawriter" \
+   root_rotation_statements="SET PASSWORD = PASSWORD('{{password}}')" \
+   username="tio" password="$newpassword"
 
 # project viewer
 vault write database/roles/datareader db_name=tiosql \
@@ -94,7 +95,7 @@ default_ttl="10m" max_ttl="24h"
 config_consul() {
     echo "***** Configure Consul  *****"
 
-    consul_pid=`ps -ef |grep 'consul agent -dev' |grep -v grep |awk '{print $2}'`
+    consul_pid=$(ps -ef |grep 'consul agent -dev' |grep -v grep |awk '{print $2}')
     if [ "$consul_pid" != "" ]; then 
 	echo "Killing CONSUL pid $consul_pid"
         sudo kill -9 $consul_pid
@@ -130,8 +131,9 @@ config_httpd() {
 reset_mysqld() {
     echo "***** Reset mysqld root *****"
 
-    oldpwd=`sudo grep 'root@localhost:' /var/log/mysqld.log |awk '{print $NF}'`
-    newpassword=`vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}'`
+    oldpwd=$(sudo grep 'root@localhost:' /var/log/mysqld.log |awk '{print $NF}')
+    newpassword=$(vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}')
+    echo "new password is $newpassword"
     mysqladmin --user=root --password=$oldpwd password $newpassword
 
     # reset root to the beginning
@@ -140,29 +142,38 @@ reset_mysqld() {
 
 create_testdb () {
     echo "***** Create test databases *****"
-    newpassword=`vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}'`
-    echo "password is $newpassword"
+    newpassword=$(vault kv get mysecret/mysql |grep root_new_password| awk '{print $2}')
+    echo "new password is $newpassword"
     mysql -u root -p"$newpassword" --force < ~/hashi/sql/init.sql
 }
 
+
 config_dnsmasq() {
     echo "***** Configure dnsmasq *****"
-    sudo yum install -y dnsmasq
     sudo cat <<EOF |sudo tee /etc/dnsmasq.d/10-consul
 server=/consul/127.0.0.1#8600
 EOF
     sudo systemctl restart dnsmasq
 }
 
-config_dnsmasq
+config_resolv() {
+    sudo sed -i -e 's/nameserver/#nameserver/g; $anameserver 127.0.0.1' /etc/resolv.conf
+}
 
-#untar_apprentice
-#config_vault
-#config_vault_kv
-#config_vault_policy
-#config_consul
-#config_httpd
-#reset_mysqld
-#create_testdb
-#config_vault_database
+
+
+config_dnsmasq
+config_resolv
+untar_apprentice
+
+config_vault
+config_vault_kv
+config_vault_policy
+
+config_consul
+config_httpd
+reset_mysqld
+
+create_testdb
+config_vault_database
 

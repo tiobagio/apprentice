@@ -27,8 +27,7 @@ resource "random_id" "random" {
 
 ////////////////////////////
 // Instance
-//  ami                    = "ami-09032db74f79eea11"
-// count                  = var.node_counter
+//  ami                    = "ami-0930799ecc6029c1c"
 
 resource "aws_instance" "linux-node" {
   instance_type          = "t3.medium"
@@ -59,19 +58,19 @@ resource "aws_instance" "linux-node" {
   }
 
   provisioner "file" {
-    content     = templatefile("${path.module}/../templates/hashi.sh.tpl", { mysql_password = var.mysql_password })
-    destination = "/tmp/hashi.sh"
+    content     = templatefile("${path.module}/../templates/config.sh.tpl", { mysql_password = var.mysql_password })
+    destination = "/tmp/config.sh"
   }
 
   provisioner "file" {
     source     = "${path.module}/../files/apprentice.tgz"
     destination = "/home/ec2-user/apprentice.tgz"
 }
-//  provisioner "remote-exec" {
-//    inline = [
-//      "bash -x /tmp/hashi.sh.sh"
-//    ]
-//  }
+  provisioner "remote-exec" {
+    inline = [
+      "bash -x /tmp/config.sh"
+    ]
+  }
 
 }
 
