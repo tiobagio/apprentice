@@ -20,7 +20,7 @@ variable "ami_owner"    { default = "309956199498" } # Base RHEL owner
 ////////////////////////////////
 // Nodes
 
-variable "node_counter" { default = "0" }
+variable "node_counter" { default = "1" }
 variable "linux_node_instance_type" { default = "t3.medium" }
 
 // Applications

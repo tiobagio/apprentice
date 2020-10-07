@@ -40,12 +40,58 @@ resource "aws_security_group_rule" "apprentice_ingress_allow_5985_tcp" {
   security_group_id = aws_security_group.apprentice.id
 }
 
+// Vault - Consul
+resource "aws_security_group_rule" "apprentice_ingress_allow_7300_tcp" {
+  type              = "ingress"
+  from_port         = 7300
+  to_port           = 7301
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+resource "aws_security_group_rule" "apprentice_ingress_allow_7300_udp" {
+  type              = "ingress"
+  from_port         = 7300
+  to_port           = 7301
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+
+
 // Vault UI
 resource "aws_security_group_rule" "apprentice_ingress_allow_8200_tcp" {
   type              = "ingress"
   from_port         = 8200
-  to_port           = 8200
+  to_port           = 8201
   protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+resource "aws_security_group_rule" "apprentice_ingress_allow_8200_udp" {
+  type              = "ingress"
+  from_port         = 8200
+  to_port           = 8201
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+
+// Consul Serf LAN/WAN, and server RPC
+resource "aws_security_group_rule" "apprentice_ingress_allow_8300_tcp" {
+  type              = "ingress"
+  from_port         = 8300
+  to_port           = 8302
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+
+resource "aws_security_group_rule" "apprentice_ingress_allow_8300_udp" {
+  type              = "ingress"
+  from_port         = 8300
+  to_port           = 8302
+  protocol          = "udp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.apprentice.id
 }
@@ -60,6 +106,23 @@ resource "aws_security_group_rule" "apprentice_ingress_8500_tcp" {
   security_group_id = aws_security_group.apprentice.id
 }
 
+// Consul DNS
+resource "aws_security_group_rule" "apprentice_ingress_allow_8600_udp" {
+  type              = "ingress"
+  from_port         = 8600
+  to_port           = 8600
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
+resource "aws_security_group_rule" "apprentice_ingress_8600_tcp" {
+  type              = "ingress"
+  from_port         = 8600
+  to_port           = 8600
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.apprentice.id
+}
 
 # HTTP/S
 resource "aws_security_group_rule" "apprentice_ingress_allow_80_tcp" {
