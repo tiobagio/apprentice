@@ -14,6 +14,11 @@ This repo creates a Demo Environment to teach Hashicorp Vault and Consul Essenti
     - Change the root password
     - Creates test databases and users
 
+### Instructuion for Radar
+git add .
+git commit -m "add bank.tf"
+git push
+
 
 ### Step 1 - Get Started
 First you need the code !
